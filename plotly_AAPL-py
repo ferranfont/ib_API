@@ -1,0 +1,118 @@
+from flask import Flask, render_template_string
+import yfinance as yf
+import pandas as pd
+import plotly.graph_objs as go
+import plotly.offline as pyo
+import threading
+import webbrowser
+
+app = Flask(__name__)
+
+HTML_TEMPLATE = """
+<!doctype html>
+<html>
+<head>
+    <title>AAPL Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 30px; background-color: #f5f5f5; }
+        h1 { font-size: 28px; color: #333; }
+        .df-table { background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <h1>📈 Apple Inc. (AAPL) – Last 30 Days</h1>
+    {{ plot_div | safe }}
+
+    <div class="df-table">
+        {{ table_html | safe }}
+    </div>
+</body>
+</html>
+"""
+
+@app.route("/")
+def index():
+    # Fetch data
+    ticker = yf.Ticker("AAPL")
+    df = ticker.history(period="30d", interval="1d")
+    df = df[["Open", "High", "Low", "Close"]].reset_index()
+    df["Date"] = df["Date"].dt.strftime("%Y-%m-%d")
+    df = df[["Date", "Open", "High", "Low", "Close"]]
+
+    # Generate Plotly chart (Closing Price)
+    trace = go.Scatter(x=df["Date"], y=df["Close"], mode="lines+markers", name="Close Price")
+    layout = go.Layout(title="AAPL Closing Price – Last 30 Days", xaxis=dict(title="Date"), yaxis=dict(title="Price (USD)"))
+    fig = go.Figure(data=[trace], layout=layout)
+    plot_div = pyo.plot(fig, output_type="div", include_plotlyjs=False)
+
+    # Table (like Jupyter style)
+    table_html = df.style.set_table_attributes("class='dataframe'").hide(axis="index").to_html()
+
+    return render_template_string(HTML_TEMPLATE, plot_div=plot_div, table_html=table_html)
+
+def open_browser():
+    webbrowser.open_new("http://127.0.0.1:5000")
+
+if __name__ == "__main__":
+    threading.Timer(1.0, open_browser).start()
+    app.run(debug=True)
+from flask import Flask, render_template_string
+import yfinance as yf
+import pandas as pd
+import plotly.graph_objs as go
+import plotly.offline as pyo
+import threading
+import webbrowser
+
+app = Flask(__name__)
+
+HTML_TEMPLATE = """
+<!doctype html>
+<html>
+<head>
+    <title>AAPL Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 30px; background-color: #f5f5f5; }
+        h1 { font-size: 28px; color: #333; }
+        .df-table { background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin-top: 30px; }
+    </style>
+</head>
+<body>
+    <h1>📈 Apple Inc. (AAPL) – Last 30 Days</h1>
+    {{ plot_div | safe }}
+
+    <div class="df-table">
+        {{ table_html | safe }}
+    </div>
+</body>
+</html>
+"""
+
+@app.route("/")
+def index():
+    # Fetch data
+    ticker = yf.Ticker("AAPL")
+    df = ticker.history(period="30d", interval="1d")
+    df = df[["Open", "High", "Low", "Close"]].reset_index()
+    df["Date"] = df["Date"].dt.strftime("%Y-%m-%d")
+    df = df[["Date", "Open", "High", "Low", "Close"]]
+
+    # Generate Plotly chart (Closing Price)
+    trace = go.Scatter(x=df["Date"], y=df["Close"], mode="lines+markers", name="Close Price")
+    layout = go.Layout(title="AAPL Closing Price – Last 30 Days", xaxis=dict(title="Date"), yaxis=dict(title="Price (USD)"))
+    fig = go.Figure(data=[trace], layout=layout)
+    plot_div = pyo.plot(fig, output_type="div", include_plotlyjs=False)
+
+    # Table (like Jupyter style)
+    table_html = df.style.set_table_attributes("class='dataframe'").hide(axis="index").to_html()
+
+    return render_template_string(HTML_TEMPLATE, plot_div=plot_div, table_html=table_html)
+
+def open_browser():
+    webbrowser.open_new("http://127.0.0.1:5000")
+
+if __name__ == "__main__":
+    threading.Timer(1.0, open_browser).start()
+    app.run(debug=True)
